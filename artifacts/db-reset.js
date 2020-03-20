@@ -6,11 +6,10 @@
 // before running it (default: development). ie:
 // NODE_ENV=production node artifacts/db-reset.js
 
-const _ = require("underscore");
-const { MongoClient } = require("mongodb");
-const { db } = require("../config/config");
+var _ = require("underscore");
+var MongoClient = require("mongodb").MongoClient;
 
-const USERS_TO_INSERT = [
+var USERS_TO_INSERT = [
     {
         "_id": 1,
         "userName": "admin",
@@ -25,25 +24,22 @@ const USERS_TO_INSERT = [
         "firstName": "John",
         "lastName": "Doe",
         "benefitStartDate": "2030-01-10",
-
       //  "password": "User1_123"
          "password" : "$2a$10$RNFhiNmt2TTpVO9cqZElb.LQM9e1mzDoggEHufLjAnAKImc6FNE86",// User1_123
-
     }, {
         "_id": 3,
         "userName": "user2",
         "firstName": "Will",
         "lastName": "Smith",
         "benefitStartDate": "2025-11-30",
-
       //  "password": "User2_123"
         "password" : "$2a$10$Tlx2cNv15M0Aia7wyItjsepeA8Y6PyBYaNdQqvpxkIUlcONf1ZHyq", // User2_123
-
     }];
 
 // Getting the global config taking in account he environment (proc)
+var config = require("../config/config");
 
-const parseResponse = (err, res, comm) => {
+function parseResponse(err, res, comm) {
     if (err) {
         console.log("ERROR:");
         console.log(comm);
@@ -56,13 +52,15 @@ const parseResponse = (err, res, comm) => {
 
 
 // Starting here
-MongoClient.connect(db, (err, db) =>  {
+MongoClient.connect(config.db, function(err, db) {
+    var usersCol, allocationsCol, countersCol;
+
     if (err) {
         console.log("ERROR: connect");
         console.log(JSON.stringify(err));
         process.exit(1);
     }
-    console.log("Connected to the database: " + db);
+    console.log("Connected to the database: " + config.db);
 
     // remove existing data (if any), we don't want to look for errors here
     db.dropCollection("users");
@@ -71,9 +69,9 @@ MongoClient.connect(db, (err, db) =>  {
     db.dropCollection("memos");
     db.dropCollection("counters");
 
-    const usersCol = db.collection("users");
-    const allocationsCol = db.collection("allocations");
-    const countersCol = db.collection("counters");
+    usersCol = db.collection("users");
+    allocationsCol = db.collection("allocations");
+    countersCol = db.collection("counters");
 
     // reset unique id counter
     countersCol.insert({
@@ -83,10 +81,13 @@ MongoClient.connect(db, (err, db) =>  {
 
     // insert admin and test users
     console.log("Users to insert:");
-    USERS_TO_INSERT.forEach((user) => console.log(JSON.stringify(user)));
+    USERS_TO_INSERT.forEach(function(user) {
+        console.log(JSON.stringify(user));
+    });
 
-    usersCol.insertMany(USERS_TO_INSERT, (err, data) => {
-        const finalAllocations = [];
+    usersCol.insertMany(USERS_TO_INSERT, function(err, data) {
+        var finalAllocations = [];
+        var ids;
 
         // We can't continue if error here
         if (err) {
@@ -96,9 +97,9 @@ MongoClient.connect(db, (err, db) =>  {
         }
         parseResponse(err, data, "users.insertMany");
 
-        data.ops.forEach((user) => {
-            const stocks = Math.floor((Math.random() * 40) + 1);
-            const funds = Math.floor((Math.random() * 40) + 1);
+        data.ops.forEach(function(user) {
+            var stocks = Math.floor((Math.random() * 40) + 1);
+            var funds = Math.floor((Math.random() * 40) + 1);
 
             finalAllocations.push({
                 userId: user._id,
@@ -109,9 +110,11 @@ MongoClient.connect(db, (err, db) =>  {
         });
 
         console.log("Allocations to insert:");
-        finalAllocations.forEach(allocation => console.log(JSON.stringify(allocation)));
+        finalAllocations.forEach(function(allocation) {
+            console.log(JSON.stringify(allocation));
+        });
 
-        allocationsCol.insertMany(finalAllocations, (err, data) => {
+        allocationsCol.insertMany(finalAllocations, function(err, data) {
             parseResponse(err, data, "allocations.insertMany");
             console.log("Database reset performed successfully")
             process.exit(0);

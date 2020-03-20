@@ -1,18 +1,18 @@
-const { BenefitsDAO } = require("../data/benefits-dao");
+var BenefitsDAO = require("../data/benefits-dao").BenefitsDAO;
 
-function BenefitsHandler (db) {
+function BenefitsHandler(db) {
     "use strict";
 
-    const benefitsDAO = new BenefitsDAO(db);
+    var benefitsDAO = new BenefitsDAO(db);
 
-    this.displayBenefits = (req, res, next) => {
+    this.displayBenefits = function(req, res, next) {
 
-        benefitsDAO.getAllNonAdminUsers((error, users) => {
+        benefitsDAO.getAllNonAdminUsers(function(error, users) {
 
             if (error) return next(error);
 
             return res.render("benefits", {
-                users,
+                users: users,
                 user: {
                     isAdmin: true
                 }
@@ -20,18 +20,21 @@ function BenefitsHandler (db) {
         });
     };
 
-    this.updateBenefits = (req, res, next) => {
-        const { userId, benefitStartDate } = req.body;
+    this.updateBenefits = function(req, res, next) {
+        var userId = req.body.userId;
+        var benefitStartDate = req.body.benefitStartDate;
 
-        benefitsDAO.updateBenefits(userId, benefitStartDate, (error) => {
+        benefitsDAO.updateBenefits(userId, benefitStartDate, function(error) {
 
             if (error) return next(error);
 
-            benefitsDAO.getAllNonAdminUsers((error, users) => {
+            benefitsDAO.getAllNonAdminUsers(function(error, users) {
+                var data;
+
                 if (error) return next(error);
 
-                const data = {
-                    users,
+                data = {
+                    users: users,
                     user: {
                         isAdmin: true
                     },

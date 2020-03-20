@@ -1,13 +1,13 @@
-const _ = require("underscore");
-const path = require("path");
+var _ = require("underscore");
+var path = require("path");
 
-const finalEnv = process.env.NODE_ENV || "development";
+var finalEnv = process.env.NODE_ENV || "development";
 
-const allConf = require(path.resolve(__dirname + "/../config/env/all.js"))
-const envConf = require(path.resolve(__dirname + "/../config/env/" + finalEnv.toLowerCase() + ".js")) || {}
+var config = _.extend(
+    require(path.resolve(__dirname + "/../config/env/all.js")),
+    require(path.resolve(__dirname + "/../config/env/" + finalEnv.toLowerCase() + ".js") || {})
+);
 
-const config = { ...allConf, ...envConf }
-
-console.log(`Current Config: ${config}`)
+console.log("Current Config:", config)
 
 module.exports = config;

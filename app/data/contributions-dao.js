@@ -1,4 +1,4 @@
-const UserDAO = require("./user-dao").UserDAO;
+var UserDAO = require("./user-dao").UserDAO;
 
 /* The ContributionsDAO must be constructed with a connected database object */
 function ContributionsDAO(db) {
@@ -11,14 +11,14 @@ function ContributionsDAO(db) {
         return new ContributionsDAO(db);
     }
 
-    const contributionsDB = db.collection("contributions");
-    const userDAO = new UserDAO(db);
+    var contributionsDB = db.collection("contributions");
+    var userDAO = new UserDAO(db);
 
-    this.update = (userId, preTax, afterTax, roth, callback) => {
-        const parsedUserId = parseInt(userId);
+    this.update = function(userId, preTax, afterTax, roth, callback) {
+        var parsedUserId = parseInt(userId);
 
         // Create contributions document
-        const contributions = {
+        var contributions = {
             userId: parsedUserId,
             preTax: preTax,
             afterTax: afterTax,
@@ -26,16 +26,16 @@ function ContributionsDAO(db) {
         };
 
         contributionsDB.update({
-            userId
+                userId: userId
             },
             contributions, {
                 upsert: true
             },
-            err => {
+            function(err, result) {
                 if (!err) {
                     console.log("Updated contributions");
                     // add user details
-                    userDAO.getUserById(parsedUserId, (err, user) => {
+                    userDAO.getUserById(parsedUserId, function(err, user) {
 
                         if (err) return callback(err, null);
 
@@ -53,11 +53,11 @@ function ContributionsDAO(db) {
         );
     };
 
-    this.getByUserId = (userId, callback) => {
+    this.getByUserId = function(userId, callback) {
         contributionsDB.findOne({
                 userId: userId
             },
-            (err, contributions) => {
+            function(err, contributions) {
                 if (err) return callback(err, null);
 
                 // Set defualt contributions if not set
@@ -68,9 +68,10 @@ function ContributionsDAO(db) {
                 };
 
                 // add user details
-                userDAO.getUserById(userId, (err, user) => {
+                userDAO.getUserById(userId, function(err, user) {
 
                     if (err) return callback(err, null);
+
                     contributions.userName = user.userName;
                     contributions.firstName = user.firstName;
                     contributions.lastName = user.lastName;
@@ -83,4 +84,4 @@ function ContributionsDAO(db) {
     };
 }
 
-module.exports = { ContributionsDAO };
+module.exports.ContributionsDAO = ContributionsDAO;
