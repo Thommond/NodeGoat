@@ -1,18 +1,18 @@
-const ProfileDAO = require("../data/profile-dao").ProfileDAO;
-const ESAPI = require('node-esapi')
+var ProfileDAO = require("../data/profile-dao").ProfileDAO;
+var ESAPI = require('node-esapi')
 
 /* The ProfileHandler must be constructed with a connected db */
-function ProfileHandler (db) {
+function ProfileHandler(db) {
     "use strict";
 
-    const profile = new ProfileDAO(db);
+    var profile = new ProfileDAO(db);
 
-    this.displayProfile = (req, res, next) => {
-        const { userId } = req.session;
+    this.displayProfile = function (req, res, next) {
+        var userId = req.session.userId;
 
 
 
-        profile.getByUserId(parseInt(userId), (err, doc) => {
+        profile.getByUserId(parseInt(userId), function (err, doc) {
             if (err) return next(err);
             doc.userId = userId;
 
@@ -29,9 +29,15 @@ function ProfileHandler (db) {
         });
     };
 
-    this.handleProfileUpdate = (req, res, next) => {
+    this.handleProfileUpdate = function (req, res, next) {
 
-        const {firstName, lastName, ssn, dob, address, bankAcc, bankRouting} = req.body;
+        var firstName = req.body.firstName;
+        var lastName = req.body.lastName;
+        var ssn = req.body.ssn;
+        var dob = req.body.dob;
+        var address = req.body.address;
+        var bankAcc = req.body.bankAcc;
+        var bankRouting = req.body.bankRouting;
 
         // Fix for Section: ReDoS attack
         // The following regexPattern that is used to validate the bankRouting number is insecure and vulnerable to
@@ -39,10 +45,10 @@ function ProfileHandler (db) {
         // with an exponential time until it completes
         // --
         // The Fix: Instead of using greedy quantifiers the same regex will work if we omit the second quantifier +
-        // const regexPattern = /([0-9]+)\#/;
-        const regexPattern = /([0-9]+)+\#/;
+        // var regexPattern = /([0-9]+)\#/;
+        var regexPattern = /([0-9]+)+\#/;
         // Allow only numbers with a suffix of the letter #, for example: 'XXXXXX#'
-        const testComplyWithRequirements = regexPattern.test(bankRouting);
+        var testComplyWithRequirements = regexPattern.test(bankRouting);
         // if the regex test fails we do not allow saving
         if (testComplyWithRequirements !== true) {
             const firstNameSafeString = firstName
@@ -58,7 +64,7 @@ function ProfileHandler (db) {
             });
         }
 
-        const { userId } = req.session;
+        var userId = req.session.userId;
 
         profile.updateUser(
             parseInt(userId),
@@ -69,7 +75,7 @@ function ProfileHandler (db) {
             address,
             bankAcc,
             bankRouting,
-            (err, user) => {
+            function (err, user) {
 
                 if (err) return next(err);
 

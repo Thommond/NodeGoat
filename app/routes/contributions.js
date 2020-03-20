@@ -1,15 +1,15 @@
-const ContributionsDAO = require("../data/contributions-dao").ContributionsDAO;
+var ContributionsDAO = require("../data/contributions-dao").ContributionsDAO;
 
 /* The ContributionsHandler must be constructed with a connected db */
-function ContributionsHandler (db) {
+function ContributionsHandler(db) {
     "use strict";
 
-    const contributionsDAO = new ContributionsDAO(db);
+    var contributionsDAO = new ContributionsDAO(db);
 
-    this.displayContributions = (req, res, next) => {
-        const { userId } = req.session;
+    this.displayContributions = function(req, res, next) {
+        var userId = req.session.userId;
 
-        contributionsDAO.getByUserId(userId, (error, contrib) => {
+        contributionsDAO.getByUserId(userId, function(error, contrib) {
             if (error) return next(error);
 
             contrib.userId = userId; //set for nav menu items
@@ -17,37 +17,32 @@ function ContributionsHandler (db) {
         });
     };
 
-    this.handleContributionsUpdate = (req, res, next) => {
-
+    this.handleContributionsUpdate = function(req, res, next) {
 
 
         //Fix for A1 -1 SSJS Injection attacks - uses alternate method to eval
-
         var preTax = parseInt(req.body.preTax);
         var afterTax = parseInt(req.body.afterTax);
         var roth = parseInt(req.body.roth);
 
         var userId = req.session.userId;
 
-
         //validate contributions
-        const validations = [isNaN(preTax), isNaN(afterTax), isNaN(roth), preTax < 0, afterTax < 0, roth < 0]
-        const isInvalid = validations.some(validation => validation)
-        if (isInvalid) {
+        if (isNaN(preTax) || isNaN(afterTax) || isNaN(roth) || preTax < 0 || afterTax < 0 || roth < 0) {
             return res.render("contributions", {
                 updateError: "Invalid contribution percentages",
-                userId
+                userId: userId
             });
         }
         // Prevent more than 30% contributions
         if (preTax + afterTax + roth > 30) {
             return res.render("contributions", {
                 updateError: "Contribution percentages cannot exceed 30 %",
-                userId
+                userId: userId
             });
         }
 
-        contributionsDAO.update(userId, preTax, afterTax, roth, (err, contributions) => {
+        contributionsDAO.update(userId, preTax, afterTax, roth, function(err, contributions) {
 
             if (err) return next(err);
 

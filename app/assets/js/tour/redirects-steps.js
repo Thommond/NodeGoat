@@ -1,4 +1,4 @@
-const redirectsTour = new Tour({
+var redirectsTour = new Tour({
     name: "redirects"
 });
 
@@ -20,7 +20,7 @@ redirectsTour.addSteps([{
     content: "Content of my popover oi"
 }]);
 
-$("#redirects-tour").on("click", () => {
+$("#redirects-tour").on("click", function() {
     "use strict";
     redirectsTour.init();
     redirectsTour.restart();

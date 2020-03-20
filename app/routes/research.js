@@ -1,16 +1,16 @@
-const ResearchDAO = require("../data/research-dao").ResearchDAO;
-const needle = require('needle');
+var ResearchDAO = require("../data/research-dao").ResearchDAO;
+var needle = require('needle');
 
-function ResearchHandler (db) {
+function ResearchHandler(db) {
     "use strict";
 
-    const researchDAO = new ResearchDAO(db);
+    var researchDAO = new ResearchDAO(db);
 
-    this.displayResearch = (req, res) => {
+    this.displayResearch = function(req, res, next) {
         
         if (req.query.symbol) {
-            const url = req.query.url+req.query.symbol; 
-            return needle.get(url, (error, newResponse) => {
+            var url = req.query.url+req.query.symbol; 
+            needle.get(url, function(error, newResponse) {
                 if (!error && newResponse.statusCode == 200)
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.write('<h1>The following is the stock information you requested.</h1>\n\n');
@@ -18,9 +18,7 @@ function ResearchHandler (db) {
                     res.write(newResponse.body);
                     return res.end();
             });
-        }
-        
-        return res.render("research");
+        } else return res.render("research");
     };
 
 }

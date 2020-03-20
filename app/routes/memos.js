@@ -1,23 +1,26 @@
-const MemosDAO = require("../data/memos-dao").MemosDAO;
+var MemosDAO = require("../data/memos-dao").MemosDAO;
 
-function MemosHandler (db) {
+function MemosHandler(db) {
     "use strict";
 
-    const memosDAO = new MemosDAO(db);
+    var memosDAO = new MemosDAO(db);
 
-    this.addMemos = (req, res, next) => {
+    var self = this;
+    this.addMemos = function(req, res, next) {
 
-        memosDAO.insert(req.body.memo, (err, docs) => {
+        memosDAO.insert(req.body.memo, function(err, docs) {
             if (err) return next(err);
-            this.displayMemos(req, res, next);
+
+            self.displayMemos(req, res, next);
+
         });
     };
 
-    this.displayMemos = (req, res, next) => {
+    this.displayMemos = function(req, res, next) {
 
-        const { userId } = req.session;
+        var userId = req.session.userId;
 
-        memosDAO.getAllMemos((err, docs) => {
+        memosDAO.getAllMemos(function(err, docs) {
             if (err) return next(err);
             return res.render("memos", {
                 memosList: docs,

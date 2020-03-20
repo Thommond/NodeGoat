@@ -1,10 +1,9 @@
-const AllocationsDAO = require("../data/allocations-dao").AllocationsDAO;
+var AllocationsDAO = require("../data/allocations-dao").AllocationsDAO;
 
-function AllocationsHandler (db) {
+function AllocationsHandler(db) {
     "use strict";
 
-    const allocationsDAO = new AllocationsDAO(db);
-
+    var allocationsDAO = new AllocationsDAO(db);
 
 
     this.displayAllocations = function(req, res, next) {
@@ -14,10 +13,13 @@ function AllocationsHandler (db) {
 
         //var userId = req.params.userId;
 
-
-        allocationsDAO.getByUserIdAndThreshold(userId, threshold, (err, allocations) => {
+        allocationsDAO.getByUserIdAndThreshold(userId, req.query.threshold, function(err, allocations) {
             if (err) return next(err);
-            return res.render("allocations", { userId, allocations });
+
+            return res.render("allocations", {
+                userId: userId,
+                allocations: allocations
+            });
         });
     };
 }
